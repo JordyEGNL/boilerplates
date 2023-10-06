@@ -1,0 +1,9 @@
+- name: "Tailscale installation"
+  hosts: "*"
+  become: yes
+  tasks:
+    - name: install tailscale
+      shell: curl -fsSL https://tailscale.com/install.sh | sh  
+      
+    - name: configure tailscale
+      shell: tailscale up --auth-key=<tailscale auth key>

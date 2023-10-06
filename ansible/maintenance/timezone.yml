@@ -1,0 +1,25 @@
+- name: "Set timezone"
+  hosts: "*"
+  become: yes
+  tasks:
+    - name: set timezone
+      shell: timedatectl set-timezone Europe/Amsterdam
+
+    - name: install timesyncd
+      apt:
+        name: systemd-timesyncd
+        state:  present
+        update_cache: true # apt update
+
+    - name: Stop timesyncd
+      systemd:
+        name: systemd-timesyncd.service
+        state: stopped
+
+    - name: copy timesyncd config
+      template: src=../templates/timesyncd.conf dest=/etc/systemd/timesyncd.conf
+
+    - name: Stop timesyncd
+      systemd:
+        name: systemd-timesyncd.service
+        state: started

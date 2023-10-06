@@ -1,0 +1,7 @@
+- hosts: "*"
+  become: yes # become root
+  tasks:
+    - name: apt
+      apt:
+        update_cache: yes # apt update
+        upgrade: 'yes' # apt upgrade
