@@ -27,7 +27,7 @@ services:
     ports:
       - 6881:6881
       - 6881:6881/udp
-      - 8085:8085
+      - 8085:8085 # <-- This needs to be the same as WEBUI_PORT from qBittorrent
     volumes:
       - ./gluetun:/gluetun
     environment:
