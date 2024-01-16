@@ -1,0 +1,55 @@
+version: "3"
+services:
+  vaultwarden:
+    image: vaultwarden/server:testing
+    container_name: vaultwarden
+    volumes:
+      - ./data/:/data/
+      - ./logs/:/logs/
+    restart: unless-stopped
+    environment:
+      PUSH_ENABLED: true
+      PUSH_INSTALLATION_ID: ${PUSH_INSTALLATION_ID}
+      PUSH_INSTALLATION_KEY: ${PUSH_INSTALLATION_KEY}
+      PUSH_RELAY_URI: ${PUSH_RELAY_URI}
+      PUSH_IDENTITY_URI: ${PUSH_IDENTITY_URI}
+      TZ: ${TIMEZONE}
+      ICON_SERVICE: duckduckgo
+      ICON_BLACKLIST_NON_GLOBAL_IPS: false
+      LOG_FILE: /logs/vaultwarden.log
+      EXPERIMENTAL_CLIENT_FEATURE_FLAGS: fido2-vault-credentials
+      ADMIN_TOKEN: ${VAULTWARDEN_ADMIN_TOKEN}
+    labels:
+      traefik.enable: true
+      traefik.http.routers.vaultwarden.entryPoints: https
+      traefik.http.routers.vaultwarden.service: vaultwarden
+      traefik.http.services.vaultwarden.loadbalancer.server.port: 80
+      traefik.http.routers.vaultwarden.rule: Host(`vault.<domain>.<tld>`)
+  backup:
+    image: ttionya/vaultwarden-backup:latest
+    container_name: vaultwarden_backup
+    restart: always
+    environment:
+      - RCLONE_REMOTE_NAME=Vaultwarden
+      - RCLONE_REMOTE_DIR=${RCLONE_REMOTE_DIR}
+      - BACKUP_FILE_DATE_SUFFIX=%H%M
+      - CRON=0 21 * * *
+      - ZIP_ENABLE=TRUE
+      - ZIP_PASSWORD=${BACKUP_ZIP_PASSWORD}
+      - ZIP_TYPE=7z
+      - BACKUP_KEEP_DAYS=10
+      - TZ=${TIMEZONE}
+      - PING_URL=${BACKUP_PING_URL}
+    volumes:
+      - ./data:/bitwarden/data:ro
+      - vaultwarden-rclone-data:/config
+
+volumes:
+  vaultwarden-rclone-data:
+    external: true
+    name: vaultwarden-rclone-data
+
+networks:
+  default:
+    name: proxy
+    external: true
